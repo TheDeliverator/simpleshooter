@@ -11,6 +11,7 @@ local bullets = {}
 local enemyBullets = {}
 local gameState = "playing"  -- playing, paused, gameover
 local score = 0
+local levelCount = 1        -- Track number of levels completed
 
 -- Initialize the game
 function love.load()
@@ -28,6 +29,11 @@ function love.load()
     
     -- Create camera
     camera = Camera.new()
+    
+    -- Make score function available globally
+    _G.addScore = function(points)
+        score = score + points
+    end
 end
 
 -- Update game logic
@@ -37,6 +43,10 @@ function love.update(dt)
     -- Store player position in global variables for enemies to target
     _G.playerX = player.x
     _G.playerY = player.y
+    
+    -- Store camera position in global variables for enemy visibility checks
+    _G.cameraX = camera.x
+    _G.cameraY = camera.y
     
     -- Check for Shift key to shoot
     if love.keyboard.isDown("lshift") or love.keyboard.isDown("rshift") then
@@ -70,6 +80,32 @@ function love.update(dt)
     -- Check game over conditions
     if player.health <= 0 then
         gameState = "gameover"
+    end
+    
+    -- Check for level completion
+    if player.x >= level.width - player.width - 50 then
+        -- Award bonus points based on current level
+        local levelBonus = 1000 * levelCount
+        score = score + levelBonus
+        levelCount = levelCount + 1
+        
+        -- Generate new level
+        level:generate()
+        player:respawn(level)
+        
+        -- Show level completion message
+        _G.levelCompletionMessage = {
+            text = string.format("Level %d Complete! Bonus: %d", levelCount - 1, levelBonus),
+            timer = 3  -- Show for 3 seconds
+        }
+    end
+    
+    -- Update level completion message timer
+    if _G.levelCompletionMessage and _G.levelCompletionMessage.timer > 0 then
+        _G.levelCompletionMessage.timer = _G.levelCompletionMessage.timer - dt
+        if _G.levelCompletionMessage.timer <= 0 then
+            _G.levelCompletionMessage = nil
+        end
     end
 end
 
@@ -174,6 +210,24 @@ function drawUI()
     elseif gameState == "gameover" then
         drawCenteredText("GAME OVER", "Press ENTER to restart")
     end
+    
+    -- Display level completion message
+    if _G.levelCompletionMessage and _G.levelCompletionMessage.timer > 0 then
+        local text = _G.levelCompletionMessage.text
+        local w = love.graphics.getWidth()
+        local font = love.graphics.getFont()
+        local textWidth = font:getWidth(text)
+        
+        -- Draw with a shadow effect
+        love.graphics.setColor(0, 0, 0, 0.8)
+        love.graphics.print(text, w/2 - textWidth/2 + 2, 102)
+        love.graphics.setColor(1, 1, 0) -- Yellow text
+        love.graphics.print(text, w/2 - textWidth/2, 100)
+        love.graphics.setColor(1, 1, 1) -- Reset color
+    end
+    
+    -- Display current level
+    love.graphics.print("Level: " .. levelCount, 20, 80)
 end
 
 -- Helper function to draw centered text
@@ -202,4 +256,5 @@ function resetGame()
     level:generate()
     player:respawn(level)
     gameState = "playing"
+    levelCount = 1
 end

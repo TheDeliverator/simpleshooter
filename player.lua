@@ -8,7 +8,7 @@ function Player.new(x, y)
     self.width = 32
     self.height = 48
     self.speed = 200
-    self.jumpPower = 900     -- Adjusted to a more reasonable value (was 1800)
+    self.jumpPower = 1000     -- Increased from 900 for stronger jump
     self.gravity = 12
     self.velocityX = 0
     self.velocityY = 0

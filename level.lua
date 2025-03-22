@@ -87,6 +87,12 @@ function Level:generate()
 end
 
 function Level:update(dt, bullets, enemyBullets)
+    -- Get camera position from global variables (set these in main.lua)
+    local cameraX = _G.cameraX or 0
+    local cameraY = _G.cameraY or 0
+    local screenWidth = love.graphics.getWidth()
+    local screenHeight = love.graphics.getHeight()
+
     -- Update enemies
     for i = #self.enemies, 1, -1 do
         local enemy = self.enemies[i]
@@ -99,12 +105,18 @@ function Level:update(dt, bullets, enemyBullets)
             enemy.direction = -enemy.direction
         end
         
-        -- Enemy shooting
+        -- Check if enemy is visible on screen
+        local isVisible = enemy.x + enemy.width >= cameraX and 
+                         enemy.x <= cameraX + screenWidth and
+                         enemy.y + enemy.height >= cameraY and
+                         enemy.y <= cameraY + screenHeight
+        
+        -- Enemy shooting only when visible
         enemy.shootCooldown = enemy.shootCooldown - dt
-        if enemy.shootCooldown <= 0 then
+        if isVisible and enemy.shootCooldown <= 0 then
             -- Calculate direction towards player
-            local direction = 1  -- Default to right if no player position available
-            if _G.playerX then   -- Global player position set in main.lua
+            local direction = 1
+            if _G.playerX then
                 direction = (_G.playerX > enemy.x) and 1 or -1
             end
             
@@ -130,6 +142,10 @@ function Level:update(dt, bullets, enemyBullets)
                 
                 if enemy.health <= 0 then
                     table.remove(self.enemies, i)
+                    -- Add score when enemy is killed
+                    if _G.addScore then
+                        _G.addScore(100)  -- 100 points per enemy kill
+                    end
                     break
                 end
             end
