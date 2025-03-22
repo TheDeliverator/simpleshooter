@@ -70,8 +70,12 @@ function Player:update(dt, level)
     
     -- Death by falling
     if self.y > level.height + 200 then
-        self.health = 0  -- This will trigger the life system through takeDamage
-        self:takeDamage(0)
+        if _G.updateLives then
+            _G.updateLives(_G.lives - 1)
+            if _G.lives > 0 then
+                self:respawn(level)
+            end
+        end
     end
 end
 
@@ -137,10 +141,9 @@ function Player:takeDamage(amount)
     if self.health <= 0 then
         -- Access the global variables
         local level = _G.currentLevel
-        if _G.lives then
-            _G.lives = _G.lives - 1
+        if _G.updateLives then
+            _G.updateLives(_G.lives - 1)
             if _G.lives > 0 then
-                -- Just respawn if we have lives left
                 self:respawn(level)
             end
         end

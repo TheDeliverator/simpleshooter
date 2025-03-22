@@ -36,6 +36,16 @@ function love.load()
     _G.addScore = function(points)
         score = score + points
     end
+
+    -- Make lives management available globally
+    _G.lives = lives
+    _G.updateLives = function(newLives)
+        lives = newLives
+        _G.lives = newLives
+        if lives <= 0 then
+            gameState = "gameover"
+        end
+    end
 end
 
 -- Update game logic
@@ -79,8 +89,11 @@ function love.update(dt)
     camera:follow(player.x, player.y, player.width, player.height)
     camera:update(dt)
     
-    -- Check game over conditions
-    if player.health <= 0 then
+    -- Keep global lives in sync
+    _G.lives = lives
+    
+    -- Update game state based on lives
+    if lives <= 0 then
         gameState = "gameover"
     end
     
@@ -199,8 +212,8 @@ function drawUI()
     love.graphics.print("Score: " .. score, 20, 50)
     love.graphics.print("Level: " .. levelCount, 20, 80)
     
-    -- Display lives
-    love.graphics.print("Lives: " .. lives, 20, 110)
+    -- Display lives (never show negative)
+    love.graphics.print("Lives: " .. math.max(0, lives), 20, 110)
     
     -- Display controls hint (removed R key)
     love.graphics.print("WASD/Arrows: Move | Space: Jump | Shift: Shoot | Esc: Pause", 20, love.graphics.getHeight() - 30)
