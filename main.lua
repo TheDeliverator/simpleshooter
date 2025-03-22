@@ -20,6 +20,9 @@ function love.load()
     -- Create level with random generation
     level = Level.new(10000, 1000)
     
+    -- Store level in global variable for access from player module
+    _G.currentLevel = level
+    
     -- Create player at spawn position
     player = Player.new(level.spawnX, level.spawnY)
     
@@ -34,6 +37,11 @@ function love.update(dt)
     -- Store player position in global variables for enemies to target
     _G.playerX = player.x
     _G.playerY = player.y
+    
+    -- Check for Shift key to shoot
+    if love.keyboard.isDown("lshift") or love.keyboard.isDown("rshift") then
+        player:shoot(bullets)
+    end
     
     -- Update player
     player:update(dt, level)
@@ -89,12 +97,6 @@ function love.keypressed(key)
     if key == "r" then
         level:generate()  -- Regenerate level with a new random layout
         player:respawn(level)
-    end
-end
-
-function love.mousepressed(x, y, button)
-    if button == 1 and gameState == "playing" then  -- left mouse button
-        player:shoot(bullets)
     end
 end
 
@@ -164,7 +166,7 @@ function drawUI()
     love.graphics.print("Score: " .. score, 20, 50)
     
     -- Display controls hint
-    love.graphics.print("WASD/Arrows: Move | Space: Jump | Mouse: Shoot | R: New Level | Esc: Pause", 20, love.graphics.getHeight() - 30)
+    love.graphics.print("WASD/Arrows: Move | Space: Jump | Shift: Shoot | R: New Level | Esc: Pause", 20, love.graphics.getHeight() - 30)
     
     -- Game state overlays
     if gameState == "paused" then

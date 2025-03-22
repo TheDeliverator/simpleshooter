@@ -8,7 +8,7 @@ function Player.new(x, y)
     self.width = 32
     self.height = 48
     self.speed = 200
-    self.jumpPower = 1800     -- Increased to 3x the previous value (600)
+    self.jumpPower = 900     -- Adjusted to a more reasonable value (was 1800)
     self.gravity = 12
     self.velocityX = 0
     self.velocityY = 0
@@ -134,7 +134,16 @@ end
 function Player:takeDamage(amount)
     self.health = self.health - amount
     if self.health <= 0 then
-        self:respawn()
+        -- Access the global level variable from main.lua
+        local level = _G.currentLevel
+        if level then
+            self:respawn(level)
+        else
+            -- Fallback if level is not accessible
+            self.health = 100
+            self.velocityX = 0
+            self.velocityY = 0
+        end
     end
 end
 
