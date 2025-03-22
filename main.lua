@@ -12,6 +12,8 @@ local enemyBullets = {}
 local gameState = "playing"  -- playing, paused, gameover
 local score = 0
 local levelCount = 1        -- Track number of levels completed
+local lives = 3           -- Initial number of lives
+local maxLives = 3        -- Maximum number of lives
 
 -- Initialize the game
 function love.load()
@@ -129,11 +131,6 @@ function love.keypressed(key)
     if key == "space" or key == "up" or key == "w" then
         player:jump()
     end
-    
-    if key == "r" then
-        level:generate()  -- Regenerate level with a new random layout
-        player:respawn(level)
-    end
 end
 
 -- Update all bullets
@@ -198,11 +195,15 @@ function drawUI()
     love.graphics.setColor(1, 1, 1)
     love.graphics.print("Health", 25, 22)
     
-    -- Display score
+    -- Display score and level
     love.graphics.print("Score: " .. score, 20, 50)
+    love.graphics.print("Level: " .. levelCount, 20, 80)
     
-    -- Display controls hint
-    love.graphics.print("WASD/Arrows: Move | Space: Jump | Shift: Shoot | R: New Level | Esc: Pause", 20, love.graphics.getHeight() - 30)
+    -- Display lives
+    love.graphics.print("Lives: " .. lives, 20, 110)
+    
+    -- Display controls hint (removed R key)
+    love.graphics.print("WASD/Arrows: Move | Space: Jump | Shift: Shoot | Esc: Pause", 20, love.graphics.getHeight() - 30)
     
     -- Game state overlays
     if gameState == "paused" then
@@ -225,9 +226,6 @@ function drawUI()
         love.graphics.print(text, w/2 - textWidth/2, 100)
         love.graphics.setColor(1, 1, 1) -- Reset color
     end
-    
-    -- Display current level
-    love.graphics.print("Level: " .. levelCount, 20, 80)
 end
 
 -- Helper function to draw centered text
@@ -253,6 +251,7 @@ function resetGame()
     bullets = {}
     enemyBullets = {}
     score = 0
+    lives = maxLives
     level:generate()
     player:respawn(level)
     gameState = "playing"

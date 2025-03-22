@@ -70,7 +70,8 @@ function Player:update(dt, level)
     
     -- Death by falling
     if self.y > level.height + 200 then
-        self:respawn(level)
+        self.health = 0  -- This will trigger the life system through takeDamage
+        self:takeDamage(0)
     end
 end
 
@@ -134,15 +135,14 @@ end
 function Player:takeDamage(amount)
     self.health = self.health - amount
     if self.health <= 0 then
-        -- Access the global level variable from main.lua
+        -- Access the global variables
         local level = _G.currentLevel
-        if level then
-            self:respawn(level)
-        else
-            -- Fallback if level is not accessible
-            self.health = 100
-            self.velocityX = 0
-            self.velocityY = 0
+        if _G.lives then
+            _G.lives = _G.lives - 1
+            if _G.lives > 0 then
+                -- Just respawn if we have lives left
+                self:respawn(level)
+            end
         end
     end
 end
@@ -153,6 +153,8 @@ function Player:respawn(level)
     self.y = level.spawnY
     self.velocityX = 0
     self.velocityY = 0
+    self.jumpCount = 0
+    self.canDoubleJump = false
 end
 
 return Player
