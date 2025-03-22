@@ -8,8 +8,8 @@ function Player.new(x, y)
     self.width = 32
     self.height = 48
     self.speed = 200
-    self.jumpPower = 600     -- Increased from 450
-    self.gravity = 12        -- Reduced from 15
+    self.jumpPower = 1800     -- Increased to 3x the previous value (600)
+    self.gravity = 12
     self.velocityX = 0
     self.velocityY = 0
     self.onGround = false
@@ -18,6 +18,8 @@ function Player.new(x, y)
     self.shootCooldown = 0
     self.shootCooldownMax = 0.2 -- seconds between shots
     self.color = {1, 1, 1} -- White color for the player
+    self.canDoubleJump = false  -- Track if player can double jump
+    self.jumpCount = 0          -- Track number of jumps
     return self
 end
 
@@ -54,6 +56,8 @@ function Player:update(dt, level)
             self.onGround = true
             self.velocityY = 0
             self.y = platform.y - self.height
+            self.jumpCount = 0  -- Reset jump count when on ground
+            self.canDoubleJump = false
         end
     end
     
@@ -74,6 +78,12 @@ function Player:jump()
     if self.onGround then
         self.velocityY = -self.jumpPower
         self.onGround = false
+        self.jumpCount = 1
+        self.canDoubleJump = true
+    elseif self.canDoubleJump and self.jumpCount == 1 then
+        self.velocityY = -self.jumpPower * 0.8  -- Slightly weaker double jump
+        self.jumpCount = 2
+        self.canDoubleJump = false
     end
 end
 

@@ -27,16 +27,19 @@ function Level:generate()
     
     -- Generate platforms
     local x = 450 -- Start position after initial platform
-    local minY = 200
+    local minY = 300   -- Increased minimum height (was 200)
     local maxY = 500
-    local minWidth = 70
+    local minWidth = 100  -- Increased minimum width (was 70)
     local maxWidth = 300
-    local minGap = 50
-    local maxGap = 200
+    local minGap = 30     -- Reduced minimum gap (was 50)
+    local maxGap = 120    -- Reduced maximum gap (was 200)
+    local lastY = 500     -- Track last platform Y to avoid extreme height changes
     
     while x < self.width do
         local platformWidth = math.random(minWidth, maxWidth)
-        local platformY = math.random(minY, maxY)
+        -- Make Y closer to previous platform's height to avoid extreme jumps
+        local platformY = math.max(minY, math.min(maxY, lastY + math.random(-80, 80)))
+        lastY = platformY
         
         table.insert(self.platforms, {
             x = x,
@@ -61,7 +64,20 @@ function Level:generate()
                 platformEnd = x + platformWidth,
                 color = {1, 0, 0},
                 shootCooldown = 0,
-                shootRate = 2 -- seconds between shots
+                shootRate = 4 -- Increased from 2 to 4 seconds between shots (50% slower)
+            })
+        end
+        
+        -- Add occasional small intermediate platforms for difficult jumps
+        if math.random() < 0.3 and maxGap > 80 then
+            local midX = x + platformWidth + math.random(20, 40)
+            local midY = math.random(platformY - 50, platformY + 50)
+            
+            table.insert(self.platforms, {
+                x = midX,
+                y = midY,
+                width = math.random(50, 80),
+                height = 20
             })
         end
         
